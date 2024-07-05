@@ -3,8 +3,6 @@ import * as http from "http";
 const ports = new Set();
 const subdomainData = new Map();
 
-subdomainData.set("sub", {port: 43243})
-
 function defineSubdomain(req){
   let subdomain = undefined;
   let host = req.headers.host;
@@ -18,28 +16,74 @@ function defineSubdomain(req){
 }
 
 const mainServer = http.createServer((req, res) => {
-  let subdomain = defineSubdomain(req);
-  // if(!subdomain) res.end("Bye bye");
-  // console.log(`Method: ${req.method}, path: ${req.url}`);
 
-  if(req.method === "POST" && req.url === "/create-tunnel") {
+  // from user
+  if(req.url === "/") {
+    let subdomain = defineSubdomain(req);
+    
+    if(subdomain) {
+      let subdomainData = getSubdomainData(subdomain);
 
+      if(subdomainData) {
+        let subReqOptions = {
+          hostname: "localhost",
+          port: subdomainData,
+          method: req.method,
+          path: req.url
+        }
+        let subReq = http.request(subReqOptions, (subRes) => {
+          let response = "";
+
+          subRes.on("data", (chunk) => {
+            response += chunk;
+          });
+
+          subRes.on("end", () => {
+            res.end(response);
+          });
+        });
+
+        subReq.on("error", (err) => {
+          res.end(JSON.stringify(err));
+        });
+
+        subReq.end();
+      } else {
+        res.end("Server not found");
+      }
+    } else {
+      // res
+    }
+  } else if (req.method === "POST" && req.url === "/create-tunnel") {
     let newServerPort = createServer();
 
-    let newConnectionData = {
-      message: "Tunnel created",
-      port: newServerPort
-    }
+    subdomainData.set("sub", newServerPort);
 
-    res.write(JSON.stringify(newConnectionData));
-    res.end();
-  } else if (req.method === "GET" && req.url === "/") {
-    res.end("Icon yo'q");
+    res.end(newServerPort.toString());
   }
-  
-  let subdomainData = getSubdomainData(subdomain);
 
-  res.end(JSON.stringify(subdomainData));
+  // event listener
+
+
+
+  // if(req.method === "POST" && req.url === "/create-tunnel") {
+
+  //   let newServerPort = createServer();
+
+  //   let newConnectionData = {
+  //     message: "Tunnel created",
+  //     port: newServerPort
+  //   }
+
+  //   res.write(JSON.stringify(newConnectionData));
+  //   res.end();
+  // } else if (req.method === "GET" && req.url === "/") {
+  //   res.end("Icon yo'q");
+  // }
+  
+  // let subdomainData = getSubdomainData(subdomain);
+
+  // res.end(JSON.stringify(subdomainData));
 });
 
 let mainServerPort = 80;
