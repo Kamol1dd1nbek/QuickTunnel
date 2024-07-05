@@ -20,36 +20,40 @@ function startAgent() {
   })
 }
 
-startAgent();
+// startAgent();
 
+let targetPort = null;
 
+let args = process.argv.slice(2);
 
+if(args[0] === "--port" || typeof args[1] === "number") {
+  targetPort = args[1];
+  createPublicServer();
+}
 
+function createPublicServer() {
+  let requestOptions = {
+    hostname: "localhost",
+    port: "80",
+    path: "/create-tunnel",
+    method: "POST"
+  }
 
+  let req = http.request(requestOptions, (res) => {
+    let response = "";
 
-// const app = http.createServer((req, res) => {
-//   const options = {
-//       host: "localhost",
-//       port: 2999,
-//       method: "GET",
-//       path: req.url
-//       };
-// const request = http.request(options2, (response) => {
-//   let result = "";
-//   response.on("data", (chunk) => result+=chunk);
-  
-//   response.on("end", () => {
-//     console.log(result)
-//     res.end(result)
-//   });
-// });
+    res.on("data", (chunk) => {
+      response += chunk;
+    });
 
-// request.on("error", err => {
-//   console.log(err.message)
-// })
-// request.end();
-// });
+    res.on("end", () => {
+      console.log(JSON.parse(response));
+    });
+  });
 
-// app.listen(3000, () => {
-//   console.log("Agent 3000 portda ishlamoqda")
-// })
+  req.on("error", (err) => {
+    console.log(err.message);
+  });
+
+  req.end();
+}

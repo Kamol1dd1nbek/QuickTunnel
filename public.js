@@ -19,7 +19,23 @@ function defineSubdomain(req){
 
 const mainServer = http.createServer((req, res) => {
   let subdomain = defineSubdomain(req);
-  if(!subdomain) res.end("Bye bye");
+  // if(!subdomain) res.end("Bye bye");
+  // console.log(`Method: ${req.method}, path: ${req.url}`);
+
+  if(req.method === "POST" && req.url === "/create-tunnel") {
+
+    let newServerPort = createServer();
+
+    let newConnectionData = {
+      message: "Tunnel created",
+      port: newServerPort
+    }
+
+    res.write(JSON.stringify(newConnectionData));
+    res.end();
+  } else if (req.method === "GET" && req.url === "/") {
+    res.end("Icon yo'q");
+  }
   
   let subdomainData = getSubdomainData(subdomain);
 
@@ -52,11 +68,10 @@ function getSubdomainData(subdomain) {
   return data;
 }
 
-function createServer() {
-  const port = getOpenPort();
+function createServer(port = getOpenPort()) {
 
   const server = http.createServer((req, res) => {
-    res.end(`Hi, my port is ${port}`);
+    res.end(`Hi, I'm new server. My port is ${port}`);
   });
 
   server.listen(port, () => {
@@ -65,10 +80,3 @@ function createServer() {
   subdomainData.set("kamoliddin", port);
   return port;
 }
-
-// console.log(createServer());
-// console.log(getSubdomainData("kamoliddin"))
-
-// agentga buyruq orqali proxy s ga create tunnel buyrugi yuborishni qilish
-//  subdomainga qarab kichik serverlarga tarqatishni qilish,
-//  kichik serverlar qabul qilib olgandan keyin agentlarga yuborishni qo'shish
