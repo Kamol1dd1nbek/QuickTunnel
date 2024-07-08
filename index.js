@@ -32,20 +32,49 @@
 
 import * as http from "http";
 
-const server = http.createServer((req, res) => {
-  const host = req.headers.host; // "Host" sarlavhasini olish
-    const parts = host.split('.');
-    console.log(parts)
+// const server = http.createServer((req, res) => {
+//   const host = req.headers.host; // "Host" sarlavhasini olish
+//     const parts = host.split('.');
+//     console.log(parts)
 
-    if (parts.length > 1) {
-        const subdomain = parts.slice(0, parts.length - 1).join('.');
-        console.log(`Subdomain: ${subdomain}`);
-    } else {
-        console.log('No subdomain');
-    }
-  res.end("Ok")
+//     if (parts.length > 1) {
+//         const subdomain = parts.slice(0, parts.length - 1).join('.');
+//         console.log(`Subdomain: ${subdomain}`);
+//     } else {
+//         console.log('No subdomain');
+//     }
+//   res.end("Ok")
+// });
+
+// server.listen(80, () => {
+//   console.log("Ok")
+// });
+
+
+
+// SSE
+const server = http.createServer((req, res) => {
+  if (req.url === '/events') {
+    res.writeHead(200, {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      'Connection': 'keep-alive'
+    });
+    res.write(`data: ${new Date().toISOString()}\n`);
+    
+    const intervalId = setInterval(() => {
+      res.write(`data: ${new Date().toISOString()}\n`);
+    }, 2000);
+
+    req.on('close', () => {
+      clearInterval(intervalId);
+    });
+  } else {
+    res.writeHead(404);
+    res.end();
+  }
 });
 
-server.listen(80, () => {
-  console.log("Ok")
-})
+server.listen(3000, '127.0.0.1', () => {
+  console.log('Server is listening on port 3000');
+});

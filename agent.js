@@ -2,6 +2,7 @@ import * as http from "http";
 
 const initialPort = 2006;
 let currentPort = initialPort;
+let targetPort = null;
 
 function startAgent() {
   const server = http.createServer((req, res) => {
@@ -22,14 +23,14 @@ function startAgent() {
 
 // startAgent();
 
-let targetPort = null;
-
 let args = process.argv.slice(2);
 
 if(args[0] === "--port" || typeof args[1] === "number") {
   targetPort = args[1];
   createPublicServer();
 }
+
+let publicServerPort = undefined;
 
 function createPublicServer() {
   let requestOptions = {
@@ -47,7 +48,8 @@ function createPublicServer() {
     });
 
     res.on("end", () => {
-      console.log(JSON.parse(response));
+      publicServerPort = JSON.parse(response);
+      openTunnel(publicServerPort);
     });
   });
 
@@ -57,3 +59,37 @@ function createPublicServer() {
 
   req.end();
 }
+
+function getApp() {
+  // let req = ht
+}
+
+function openTunnel(port) {
+  console.log(port)
+  const connectionOptions = {
+    hostname: "localhost",
+    port,
+    path: "/events",
+    method: "GET",
+    headers: {
+      'Cache-control': 'no-cache',
+      'Connection': 'keep-alive'
+    }
+  }
+  const req = http.request(connectionOptions);
+  
+  req.on("response", (res) => {
+    res.setEncoding("utf-8");
+    res.on("data", (data) => {
+      console.log(data);
+    });
+  });
+
+  req.on("error", (err) => {
+    console.log(`Error on connection with sub server: ${err.message}`);
+  });
+
+  req.end();
+}
+
+createPublicServer();

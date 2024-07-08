@@ -3,35 +3,51 @@ import * as http from "http";
 const ports = new Set();
 const subdomainData = new Map();
 
-function defineSubdomain(req){
+function defineSubdomain(req) {
   let subdomain = undefined;
   let host = req.headers.host;
   let parts = host.split(".");
 
-  if(parts.length >= 2) {
+  if (parts.length >= 2) {
     subdomain = parts[0];
   }
 
   return subdomain;
 }
 
+function getRequestOptions(req) {
+  return {
+    headers: req?.headers,
+    method: req.method,
+    path: req.url,
+    body: req?.body,
+  };
+}
+
+function getSubRequest(subdomain) {
+  return {
+    hostname: "localhost",
+    port: getSubdomainData(subdomain),
+    path: "/request",
+    method: "GET"
+  };
+}
+
 const mainServer = http.createServer((req, res) => {
-
   // from user
-  if(req.url === "/") {
-    let subdomain = defineSubdomain(req);
-    
-    if(subdomain) {
-      let subdomainData = getSubdomainData(subdomain);
+  let requestOptions = getRequestOptions(req);
+  let subdomain = defineSubdomain(req);
 
-      if(subdomainData) {
-        let subReqOptions = {
-          hostname: "localhost",
-          port: subdomainData,
-          method: req.method,
-          path: req.url
-        }
-        let subReq = http.request(subReqOptions, (subRes) => {
+  if(subdomain) {
+    let subdomainData = getSubdomainData(subdomain);
+  }
+  
+  // -------
+  if (req.method == "GET") {
+    if (subdomain) {
+      let subdomainData = getSubdomainData(subdomain);
+      if (subdomainData) {
+        let subReq = http.request(getSubRequest(), (subRes) => {
           let response = "";
 
           subRes.on("data", (chunk) => {
@@ -47,43 +63,23 @@ const mainServer = http.createServer((req, res) => {
           res.end(JSON.stringify(err));
         });
 
+        subReq.write(JSON.stringify(getRequestOptions(req)));
         subReq.end();
       } else {
         res.end("Server not found");
       }
     } else {
-      // res
+      res.writeHead(404);
+      res.end();
     }
   } else if (req.method === "POST" && req.url === "/create-tunnel") {
     let newServerPort = createServer();
 
     subdomainData.set("sub", newServerPort);
 
-    res.end(newServerPort.toString());
+    res.write(newServerPort.toString());
+    res.end();
   }
-
-  // event listener
-
-
-
-  // if(req.method === "POST" && req.url === "/create-tunnel") {
-
-  //   let newServerPort = createServer();
-
-  //   let newConnectionData = {
-  //     message: "Tunnel created",
-  //     port: newServerPort
-  //   }
-
-  //   res.write(JSON.stringify(newConnectionData));
-  //   res.end();
-  // } else if (req.method === "GET" && req.url === "/") {
-  //   res.end("Icon yo'q");
-  // }
-  
-  // let subdomainData = getSubdomainData(subdomain);
-
-  // res.end(JSON.stringify(subdomainData));
 });
 
 let mainServerPort = 80;
@@ -98,8 +94,8 @@ function getRandomPort(min = 1024, max = 65535) {
 function getOpenPort() {
   let newPort = getRandomPort();
 
-  while(ports.has(newPort)) {
-    console.log(newPort)
+  while (ports.has(newPort)) {
+    console.log(newPort);
     newPort = getRandomPort();
   }
 
@@ -112,15 +108,38 @@ function getSubdomainData(subdomain) {
   return data;
 }
 
+let eventRes = undefined;
 function createServer(port = getOpenPort()) {
-
   const server = http.createServer((req, res) => {
-    res.end(`Hi, I'm new server. My port is ${port}`);
+    if (req.url === "/events") {
+      eventRes = res;
+      res.writeHead(200, {
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache",
+        Connection: "keep-alive",
+      });
+      res.write(`data: ${new Date().toISOString()}\n`);
+    } else if (req.url === "/request") {
+      let requestOptions = {
+        path: req.url,
+        method: req.method,
+        body: req.body,
+        headers: req.headers,
+      };
+      if (!eventRes) {
+        res.end("Connection not found");
+      } else {
+        eventRes.write(JSON.stringify(requestOptions));
+      }
+    } else if (req.url === "/response") {
+    } else {
+      res.writeHead(404);
+      res.end();
+    }
   });
 
   server.listen(port, () => {
-    console.log(`New server is running on port ${port}`);
+    console.log(`New sub server is running on port: ${port}`);
   });
-  subdomainData.set("kamoliddin", port);
   return port;
 }

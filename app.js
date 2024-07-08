@@ -1,5 +1,6 @@
 import * as http from "http";
 
+// application
 const app = http.createServer((req, res) => {
   if(req.url == "/") {
     res.end("home")
