@@ -57,6 +57,7 @@ function getSubdomainData(subdomain) {
   let data = subdomainData.get(subdomain);
   return data;
 }
+
 let eventRes = undefined;
 let resultRes = undefined;
 
@@ -109,15 +110,16 @@ function createServer(port = getOpenPort()) {
   return port;
 }
 
+let i = 0;
 const mainServer = http.createServer((req, res) => {
   // create sub server
   if (req.method === "POST" && req.url === "/create-tunnel") {
     let newServerPort = createServer();
 
+    // set user device name instead of sub
     subdomainData.set("sub", newServerPort);
-
-    res.write(newServerPort.toString());
-    res.end();
+    
+    res.end(newServerPort.toString());
     return 1;
   }
   let requestOptions = getRequestOptions(req);
@@ -133,7 +135,6 @@ const mainServer = http.createServer((req, res) => {
       });
 
       subRes.on("end", () => {
-        console.log("+++++", response)
         res.write(response);
         res.end();
       });

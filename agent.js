@@ -31,40 +31,6 @@ if(args[0] === "--port" || typeof args[1] === "number") {
   createPublicServer();
 }
 
-
-
-function createPublicServer() {
-  let requestOptions = {
-    hostname: "localhost",
-    port: "80",
-    path: "/create-tunnel",
-    method: "POST"
-  }
-
-  let req = http.request(requestOptions, (res) => {
-    let response = "";
-
-    res.on("data", (chunk) => {
-      response += chunk;
-    });
-
-    res.on("end", () => {
-      publicServerPort = JSON.parse(response);
-      openTunnel(publicServerPort);
-    });
-  });
-
-  req.on("error", (err) => {
-    console.log(err.message);
-  });
-
-  req.end();
-}
-
-function getApp() {
-  // let req = ht
-}
-
 function getSubRequestOptions(req) {
   return {
     hostname: "localhost",
@@ -103,7 +69,6 @@ function openTunnel(port) {
     res.setEncoding("utf-8");
     res.on("data", (data) => {
       let request = JSON.parse(data);
-      // console.log(request);
       let subReq = http.request(getSubRequestOptions(request), (subRes) => {
         let result = "";
 
@@ -129,4 +94,30 @@ function openTunnel(port) {
   req.end();
 }
 
-createPublicServer();
+function createPublicServer() {
+  let requestOptions = {
+    hostname: "localhost",
+    port: "80",
+    path: "/create-tunnel",
+    method: "POST"
+  }
+
+  let req = http.request(requestOptions, (res) => {
+    let response = "";
+
+    res.on("data", (chunk) => {
+      response += chunk;
+    });
+
+    res.on("end", () => {
+      publicServerPort = JSON.parse(response);
+      openTunnel(publicServerPort);
+    });
+  });
+
+  req.on("error", (err) => {
+    console.log(err.message);
+  });
+
+  req.end();
+}
