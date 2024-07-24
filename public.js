@@ -76,6 +76,8 @@ function createServer(port = getOpenPort()) {
       resultRes = res;
       let body = "";
 
+      console.log(req.headers['x-forwarded-for'] || req.connection.remoteAddress)
+
       req.on("data", (chunk) => {
         body += chunk;
       });

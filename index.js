@@ -1,80 +1,69 @@
-// const http = require("http");
+// hello -> olleh
 
-// // Nishonlanadigan portlar
-// const PORT = 8080;
-// const PROXY_PORT = 3001;
-
-// // Proxy serverni yaratish
-// const proxyServer = http.createServer((req, res) => {
-//   // Real serverga o'zgartirilmagan so'rovni yuborish
-//   const options = {
-//     hostname: "localhost", // Real server nomi yoki IP manzili
-//     port: 3000, // Real server porti
-//     path: req.url,
-//     method: req.method,
-//     headers: req.headers,
-//   };
-
-//   // Real serverga murojaat qilish
-//   const proxyRequest = http.request(options, (proxyResponse) => {
-//     res.writeHead(proxyResponse.statusCode, proxyResponse.headers);
-//     proxyResponse.pipe(res, { end: true });
-//   });
-
-//   req.pipe(proxyRequest, { end: true });
-// });
-
-// // Proxy serverni eshitish
-// proxyServer.listen(PROXY_PORT, () => {
-//   console.log(`Proxy server ishga tushdi: http://localhost:${PROXY_PORT}`);
-// });
-
-
-import * as http from "http";
-
-// const server = http.createServer((req, res) => {
-//   const host = req.headers.host; // "Host" sarlavhasini olish
-//     const parts = host.split('.');
-//     console.log(parts)
-
-//     if (parts.length > 1) {
-//         const subdomain = parts.slice(0, parts.length - 1).join('.');
-//         console.log(`Subdomain: ${subdomain}`);
-//     } else {
-//         console.log('No subdomain');
-//     }
-//   res.end("Ok")
-// });
-
-// server.listen(80, () => {
-//   console.log("Ok")
-// });
-
-
-
-// SSE
-const server = http.createServer((req, res) => {
-  if (req.url === '/events') {
-    res.writeHead(200, {
-      'Content-Type': 'text/event-stream',
-      'Cache-Control': 'no-cache',
-      'Connection': 'keep-alive'
-    });
-    res.write(`data: ${new Date().toISOString()}\n`);
-    
-    const intervalId = setInterval(() => {
-      res.write(`data: ${new Date().toISOString()}\n`);
-    }, 2000);
-
-    req.on('close', () => {
-      clearInterval(intervalId);
-    });
-  } else {
-    res.writeHead(404);
-    res.end();
+function reverseString(text) {
+  let result = "";
+  for(let i = text.length - 1; i >= 0; i--) {
+    result += text[i];
   }
-});
+  return result;
+}
 
-server.listen(3000, '127.0.0.1', () => {
-  console.log('Server is listening on port 3000');
-});
+// console.log(reverseString("O'zbekiston"))
+
+// 0, 1, 1, 2, 3, 5, 8, 13, ...
+
+
+function isTub(number) {
+  let counter = 0;
+  for(let i = 0; i<= number/2; i++) {
+    if(number % i == 0) {
+      counter++;
+    }
+  }
+  return counter >= 2 ? false : true;
+}
+
+let fibonachiNumbersCount = 5;
+
+function findFibonachi(count) {
+  let firstNum = 0, secondNum = 1;
+  let result = [firstNum, secondNum];
+  for(let i = 0; i <= count; i++) {
+    let thirdNum = firstNum + secondNum;
+    firstNum = secondNum;
+    secondNum = thirdNum;
+    result.push(thirdNum);
+  }
+  return result;
+}
+
+function recursiveFibonachi(numbersCount, firstNum = 0, secondNum = 1, resultArr = []) {
+  if(resultArr.length == numbersCount) {
+    return resultArr;
+  } else {
+    let thirdNum = firstNum + secondNum;
+    resultArr.push(thirdNum);
+    return recursiveFibonachi(numbersCount, secondNum, thirdNum, resultArr);
+  }
+}
+
+function recursiveFibonachi(numbersCount, firstNum = 0, secondNum = 1, resultArr = [firstNum, secondNum]) {
+  if(resultArr.length >= numbersCount) {
+    return resultArr.slice(0, numbersCount);
+  } else {
+    let thirdNum = firstNum + secondNum;
+    resultArr.push(thirdNum);
+    return recursiveFibonachi(numbersCount, secondNum, thirdNum, resultArr);
+  }
+}
+
+console.log(recursiveFibonachi(fibonachiNumbersCount));
+
+// printFibobanachiNums(findFibonachi(fibonachiNumbersCount));
+
+function printFibobanachiNums(numbers) {
+  numbers.forEach((num) => {
+    isTub(num) ? console.log(`${num} - tub`) : console.log(num)
+  })
+}
+

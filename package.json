@@ -11,6 +11,6 @@
   "author": "",
   "license": "ISC",
   "bin": {
-    "mt": "./index.js"
+    "qtmr": "./index.js"
   }
 }
