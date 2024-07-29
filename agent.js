@@ -4,6 +4,7 @@ const initialPort = 2006;
 let currentPort = initialPort;
 let targetPort = null;
 let publicServerPort = undefined;
+let mainServerURL = "35.230.11.105";
 
 function startAgent() {
   const server = http.createServer((req, res) => {
@@ -42,7 +43,7 @@ function getSubRequestOptions(req) {
 
 function getSendDataRequestOptions() {
   return {
-    hostname: "localhost",
+    hostname: mainServerURL,
     port: publicServerPort,
     path: "/response",
     method: "POST",
@@ -54,7 +55,7 @@ function getSendDataRequestOptions() {
 
 function openTunnel(port) {
   const connectionOptions = {
-    hostname: "localhost",
+    hostname: mainServerURL,
     port,
     path: "/events",
     method: "GET",
@@ -96,7 +97,7 @@ function openTunnel(port) {
 
 function createPublicServer() {
   let requestOptions = {
-    hostname: "localhost",
+    hostname: mainServerURL,
     port: "80",
     path: "/create-tunnel",
     method: "POST"

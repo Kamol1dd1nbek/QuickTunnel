@@ -28,7 +28,7 @@ function getRequestOptions(req) {
 function getSubRequest(subdomain) {
   return {
     hostname: "localhost",
-    port: getSubdomainData(subdomain),
+    port: subdomainData.get(subdomain),
     path: "/request",
     method: "POST",
     headers: {
@@ -51,11 +51,6 @@ function getOpenPort() {
 
   ports.add(newPort);
   return newPort;
-}
-
-function getSubdomainData(subdomain) {
-  let data = subdomainData.get(subdomain);
-  return data;
 }
 
 let eventRes = undefined;

@@ -10,6 +10,6 @@ const app = http.createServer((req, res) => {
   }
 });
 
-app.listen(2006, () => {
+app.listen(65534, () => {
   console.log("Local app 2999 portda ishlab turibdi");
 });
