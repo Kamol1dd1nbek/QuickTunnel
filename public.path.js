@@ -1,33 +1,31 @@
+import { write } from "fs";
 import * as http from "http";
 import { hostname } from "os";
 
 const usersData = new Map();
-// user: port
-
 const ports = new Set();
 
 function defineUser(req) {
-  let user = req.url?.split("/")[1];
-  if (user) {
-    return user;
-  } else {
-    return null;
-  }
+  return req.url?.split("/")[1] || null;
+}
+
+function removeUserName(url) {
+  return "/" + url.split("/").slice(2).join("/");
 }
 
 function getRequestOptions(req) {
   return {
     headers: req.headers,
     method: req.method,
-    path: url.path, //userning nomini url dan olib tashlash kerak
+    path: removeUserName(req.url),
     body: req?.body,
   };
 }
 
-function getSubRequest(user) {
+function getSubRequest(port) {
   return {
     hostname: "localhost",
-    port: usersData.get(user),
+    port,
     path: "/request",
     method: "POST",
     headers: {
@@ -58,24 +56,48 @@ let resultRes = undefined;
 function createServer(port) {
   const subServer = http.createServer((req, res) => {
     let url = req.url;
-    if(url === "/request") {
+    if (url === "/request") {
       resultRes = res;
-      
+
       let body = "";
-      resultRes.end("It is answer from sub server")
-      // req.on("data", (chunk) => {
-      //   body += chunk;
-      // });
-      
-      // req.on("end", () => {
-      //   if(!eventRes) {
-      //     res.status(404).end("Connection not found");
-      //   } else {
-      //     eventRes.write(body);
-      //   }
-      // })
+
+      req.on("data", (chunk) => {
+        body += chunk;
+      });
+
+      req.on("end", () => {
+        if (!eventRes) {
+          res.writeHead(404);
+          res.end("Connection not found");
+        } else {
+          eventRes.write(body);
+        }
+      });
+    } else if (url === "/events") {
+      eventRes = res;
+
+      res.writeHead(200, {
+        "Content-Type": "text/event-stream",
+        "Cache-control": "no-cache",
+        Connection: "keep-alive",
+      });
+
+      res.write("");
+    } else if (url === "/response") {
+      let result = "";
+
+      req.on("data", (chunk) => {
+        result += chunk;
+      });
+
+      req.on("end", () => {
+        resultRes.write(result);
+        resultRes.end();
+      });
+    } else {
+      res.writeHead(404);
+      res.end();
     }
-    res.end("I am a sub server");
   });
 
   subServer.listen(port, () => {
@@ -86,31 +108,61 @@ function createServer(port) {
 }
 
 const server = http.createServer((req, res) => {
-  if (req.url === "/create-server") {
-    let newServerPort = createServer(2007);
-    usersData.set("kamoliddin", newServerPort);
-  }
+  if (req.url === "/create-server" && req.method === "POST") {
+    let data = "";
 
-  let user = defineUser(req);
+    req.on("data", (chunk) => {
+      data += chunk;
+    });
 
-  if(user && usersData.get(user)) {
-    let subReq = http.request(getSubRequest(user), (subRes) => {
-      let response = "";
+    req.on("end", () => {
+      data = JSON.parse(data);
+      if (data.username) {
+        let newServerPort = createServer(2007);
+        usersData.set(data.username, newServerPort);
+        res.end(`${newServerPort}`);
+      } else {
+        res.end("User data is not defined");
+      }
+    });
+    return;
+  } else {
+    console.log(1);
+    let userPort = usersData.get(defineUser(req));
+    console.log(2);
 
-      subRes.on("data", (chunk) => {
-        response += chunk;
+    if (userPort) {
+    console.log(3);
+
+      let subReq = http.request(getSubRequest(userPort), (subRes) => {
+        let response = "";
+        
+        
+        subRes.on("data", (chunk) => {
+          response += chunk;
+        });
+
+        subRes.on("end", () => {
+          res.write(response);
+          res.end();
+        });
       });
 
-      subRes.on("end", () => {
-        res.write(response);
-        res.end()
-      })
-    })
-  } else {
-    res.end("User not found");
+      subReq.on("error", (err) => {
+        console.log("Error on: QTMR -> Sub server");
+      });
+
+      subReq.write(JSON.stringify(getRequestOptions(req)));
+      subReq.end();
+    } else {
+      res.writeHead(404);
+      res.end("User not found");
+    }
   }
 });
 
 server.listen(2006, () => {
   console.log("Server is running on port 2006");
 });
+
+// user create server qilganda pubic link berish kerak

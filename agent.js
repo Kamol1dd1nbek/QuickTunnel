@@ -1,35 +1,30 @@
 import * as http from "http";
+import * as os from "os";
 
 const initialPort = 2006;
 let currentPort = initialPort;
 let targetPort = null;
 let publicServerPort = undefined;
-let mainServerURL = "35.230.11.105";
+let mainServerHost = "35.230.11.105";
+// let mainServerHost = "localhost";
 
 function startAgent() {
-  const server = http.createServer((req, res) => {
-
-  });
+  const server = http.createServer((req, res) => {});
 
   server.listen(currentPort, () => {
     console.log(`Agent is running on port ${currentPort}`);
   });
-  
+
   server.on("error", (err) => {
-    if(err.code === "EADDRINUSE") {
+    if (err.code === "EADDRINUSE") {
       currentPort++;
       startAgent();
     }
-  })
+  });
 }
 
-// startAgent();
-
-let args = process.argv.slice(2);
-
-if(args[0] === "--port" || typeof args[1] === "number") {
-  targetPort = args[1];
-  createPublicServer();
+function getUserName() {
+  return os.userInfo().username;
 }
 
 function getSubRequestOptions(req) {
@@ -37,35 +32,35 @@ function getSubRequestOptions(req) {
     hostname: "localhost",
     port: targetPort,
     method: req.method,
-    path: req.path
-  }
+    path: req.path,
+  };
 }
 
 function getSendDataRequestOptions() {
   return {
-    hostname: mainServerURL,
+    hostname: mainServerHost,
     port: publicServerPort,
     path: "/response",
     method: "POST",
     headers: {
-      'Content-Type': 'application/json'
-    }
-  }
+      "Content-Type": "application/json",
+    },
+  };
 }
 
 function openTunnel(port) {
   const connectionOptions = {
-    hostname: mainServerURL,
+    hostname: mainServerHost,
     port,
     path: "/events",
     method: "GET",
     headers: {
-      'Cache-control': 'no-cache',
-      'Connection': 'keep-alive'
-    }
-  }
+      "Cache-control": "no-cache",
+      Connection: "keep-alive",
+    },
+  };
   const req = http.request(connectionOptions);
-  
+
   req.on("response", (res) => {
     res.setEncoding("utf-8");
     res.on("data", (data) => {
@@ -97,11 +92,11 @@ function openTunnel(port) {
 
 function createPublicServer() {
   let requestOptions = {
-    hostname: mainServerURL,
-    port: "80",
-    path: "/create-tunnel",
-    method: "POST"
-  }
+    hostname: mainServerHost,
+    port: 2006,
+    path: "/create-server",
+    method: "POST",
+  };
 
   let req = http.request(requestOptions, (res) => {
     let response = "";
@@ -111,8 +106,8 @@ function createPublicServer() {
     });
 
     res.on("end", () => {
-      publicServerPort = JSON.parse(response);
-      openTunnel(publicServerPort);
+      publicServerPort = parseInt(response);
+      if (typeof publicServerPort === "number") openTunnel(publicServerPort);
     });
   });
 
@@ -120,5 +115,18 @@ function createPublicServer() {
     console.log(err.message);
   });
 
+  req.write(
+    JSON.stringify({
+      username: getUserName(),
+    })
+  );
+
   req.end();
+}
+
+let args = process.argv.slice(2);
+
+if (args[0] === "--port" || typeof args[1] === "number") {
+  targetPort = args[1];
+  createPublicServer();
 }

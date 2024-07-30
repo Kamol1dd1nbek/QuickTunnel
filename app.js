@@ -3,13 +3,12 @@ import * as http from "http";
 // application
 const app = http.createServer((req, res) => {
   if(req.url == "/") {
-    console.log(1)
-    res.end(JSON.stringify(req.headers["x-forwarded"]))
+    res.end("Home")
   } else {
     res.end("other")
   }
 });
 
-app.listen(65534, () => {
-  console.log("Local app 2999 portda ishlab turibdi");
+app.listen(4321, () => {
+  console.log("Local app 4321 portda ishlab turibdi");
 });

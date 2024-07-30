@@ -71,7 +71,9 @@ function createServer(port = getOpenPort()) {
       resultRes = res;
       let body = "";
 
-      console.log(req.headers['x-forwarded-for'] || req.connection.remoteAddress)
+      console.log(
+        req.headers["x-forwarded-for"] || req.connection.remoteAddress
+      );
 
       req.on("data", (chunk) => {
         body += chunk;
@@ -115,7 +117,7 @@ const mainServer = http.createServer((req, res) => {
 
     // set user device name instead of sub
     subdomainData.set("sub", newServerPort);
-    
+
     res.end(newServerPort.toString());
     return 1;
   }
