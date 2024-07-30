@@ -4,7 +4,7 @@ import * as os from "os";
 const initialPort = 2006;
 let currentPort = initialPort;
 let targetPort = null;
-let publicServerPort = undefined;
+let publicServerObject = undefined;
 let mainServerHost = "35.230.11.105";
 // let mainServerHost = "localhost";
 
@@ -39,7 +39,7 @@ function getSubRequestOptions(req) {
 function getSendDataRequestOptions() {
   return {
     hostname: mainServerHost,
-    port: publicServerPort,
+    port: publicServerObject.port,
     path: "/response",
     method: "POST",
     headers: {
@@ -106,8 +106,11 @@ function createPublicServer() {
     });
 
     res.on("end", () => {
-      publicServerPort = parseInt(response);
-      if (typeof publicServerPort === "number") openTunnel(publicServerPort);
+      publicServerObject = JSON.parse(response);
+      if (typeof publicServerObject.port === "number") {
+        openTunnel(publicServerObject.port);
+        console.log(publicServerObject.link)
+      }
     });
   });
 
@@ -130,3 +133,5 @@ if (args[0] === "--port" || typeof args[1] === "number") {
   targetPort = args[1];
   createPublicServer();
 }
+
+//npm orqali install qiladigan qilish

@@ -120,7 +120,12 @@ const server = http.createServer((req, res) => {
       if (data.username) {
         let newServerPort = createServer(2007);
         usersData.set(data.username, newServerPort);
-        res.end(`${newServerPort}`);
+        res.end(
+          JSON.stringify({
+            port: newServerPort,
+            link: `http://35.230.11.105:2006/${data.username}`,
+          })
+        );
       } else {
         res.end("User data is not defined");
       }
@@ -132,12 +137,11 @@ const server = http.createServer((req, res) => {
     console.log(2);
 
     if (userPort) {
-    console.log(3);
+      console.log(3);
 
       let subReq = http.request(getSubRequest(userPort), (subRes) => {
         let response = "";
-        
-        
+
         subRes.on("data", (chunk) => {
           response += chunk;
         });
